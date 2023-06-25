@@ -8,13 +8,10 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,6 +23,8 @@ public class JsonTest {
 
     public static void main(String[] args) {
         try {
+            // create map to hint vector
+            Map<String, List<String>> land2hintsMap = new HashMap<>();
             // create Gson instance
             Gson gson = new Gson();
             // Retrieve
@@ -40,7 +39,20 @@ public class JsonTest {
 
             for (String fl : files){
                 System.out.println("Files "+ fl);
-                readFile(ROOT_PATH + fl, gson);
+                readFile(ROOT_PATH + fl, gson, land2hintsMap);
+            }
+
+            // Sort
+
+
+            // iterate through map
+            // create a treemap to sort the lands alphabetically
+            TreeMap<String, List<String>> sortedMap = new TreeMap<>(land2hintsMap);
+            for (Map.Entry<String, List<String>> entry : sortedMap.entrySet()){
+                System.out.println("Land = " + entry.getKey());
+                for (String hint : entry.getValue()){
+                    System.out.println("\tHint = " + hint);
+                }
             }
 
 
@@ -49,7 +61,7 @@ public class JsonTest {
         }
     }
 
-    private static void readFile(String unescapedJson, Gson gson) throws IOException {
+    private static void readFile(String unescapedJson, Gson gson, Map<String, List<String>> land2hintsMap) throws IOException {
         StringBuilder sb = new StringBuilder();
         // create a reader
         BufferedReader reader = Files.newBufferedReader(Paths.get(String.valueOf(unescapedJson)), Charset.forName("CP1252"));
@@ -66,29 +78,19 @@ public class JsonTest {
         JsonObject jo = gson.fromJson(cleanFile, JsonObject.class);
         for (Map.Entry<?, JsonElement> entry : jo.entrySet()) {
             if(entry.getValue().isJsonObject()){
+                //System.out.println("Land = " + entry.getKey());
+                List<String> hintList = new ArrayList<>();
                 for (Map.Entry<?, JsonElement> hintEntry : entry.getValue().getAsJsonObject().entrySet()){
-                    System.out.println(hintEntry.getKey() + "=" + hintEntry.getValue().toString());
+                    //System.out.println("\t"+hintEntry.getKey() + "=" + hintEntry.getValue().toString());
+                    hintList.add(hintEntry.getValue().toString());
                 }
+                // add the land to the map
+                land2hintsMap.put(entry.getKey().toString(), hintList);
             }
             else {
                 System.out.println(entry.getKey() + "=" + entry.getValue().toString());
             }
         }
-        /*
-        Map<?, ?> map = gson.fromJson(cleanFile, Map.class);
-
-        // print map entries
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + "=" + entry.getValue().toString());
-            if (entry.getValue().toString().contains("{")) {
-
-                for (Map.Entry<?, ?> subentry : entry.getValue()){
-                    System.out.println(subentry.getKey() + "=" + subentry.getValue().toString());
-                }
-
-            }
-        }
-        */
         // close reader
         reader.close();
     }
