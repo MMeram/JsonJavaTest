@@ -42,18 +42,24 @@ public class JsonTest {
                 readFile(ROOT_PATH + fl, gson, land2hintsMap);
             }
 
-            // Sort
 
 
             // iterate through map
             // create a treemap to sort the lands alphabetically
             TreeMap<String, List<String>> sortedMap = new TreeMap<>(land2hintsMap);
+            Map<Integer,String> idx2Land = new HashMap<>();
+            int counter = 0;
             for (Map.Entry<String, List<String>> entry : sortedMap.entrySet()){
+                idx2Land.put(++counter, entry.getKey());
                 System.out.println("Land = " + entry.getKey());
                 for (String hint : entry.getValue()){
                     System.out.println("\tHint = " + hint);
                 }
             }
+
+            // give me the 4th land
+            System.out.println("-------------------------------");
+            System.out.println("4th land : "+idx2Land.get(4));
 
 
         } catch (Exception ex) {
